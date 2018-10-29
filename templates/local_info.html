@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Place searches</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+      // This example requires the Places library. Include the libraries=places
+      // parameter when you first load the API. For example:
+      // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+
+      var map; //전역 변수
+      var pos; //전역 변수: 현재 내 위치 위도/경도 좌표
+      var infoWindow; // 전역 변수
+      function initMap() {
+
+
+
+        map = new google.maps.Map(document.getElementById('map'), { // map 생성. 위치 정보를 받아오기 전까지는 아래의 좌표가 중앙에있는 지도가 출력된다.
+          center:  {lat: -33.8688, lng: 151.2195},
+          zoom: 15
+        });
+
+         infoWindow = new google.maps.InfoWindow({map: map}); // map에서 하나의 infoWindow객체를 생성해준다.
+       // Try HTML5 geolocation.
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) { //getCurrentPosition 함수에서 파라미터로 2개의 익명 함수를 넘기고 있다. getCurrentPosition함수는 내 기기의 GPS에서 위치 정보를 받아온다.
+              pos = {
+              lat: position.coords.latitude, // position.coords.latitude 는 현재 내 위치의 위도임
+              lng: position.coords.longitude // position.coords.longitude 는 현재 내 위치의 경도임.
+            };
+            // console.log(pos.lat,pos.lng); -> 한번 찍어보세요.
+            infoWindow.setPosition(pos); // pos 객체를 파라미터로 넘겨서 infowindow의 위치를 설정해준다.
+            infoWindow.setContent('Location found.'); //infoWindow의 말풍선 내용 설정
+            map.setCenter(pos); // 지도에서 infoWindow를 중앙에 두게 하겠다.
+
+            //end of finding my local position
+
+            infowindow = new google.maps.InfoWindow();
+            var service = new google.maps.places.PlacesService(map); // PlaceService 객체 생성
+        //console.log(pos.lat,pos.lng);
+        service.nearbySearch({ // nearbySearch 함수의 파라미터로 위치 정보와, callback 함수를 넘겨줌.
+          location: pos, //현재 내 위치
+          radius: 1000, //반경 1km
+          type: ['restaurant'] //검색하려고 하는 장소의 유형: 식당
+        }, callback);
+          }, function() { // 에러가 발생했을 때 예외 처리 해주기 위한 콜백함수.
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+            // console.log(pos.lat,pos.lng); -> 한번 찍어보세요. 왜 오류가 날까요?
+        } else { // geolocation이 1이 아닌 경우 즉 ,html geolocation이 잘 동작안할 때.
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+
+
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) { // 사용자 정의 콜백함수. geolocation이 1되서 위의 if문에 있는 statements들을 실행하다가 오류를 뱉거나, geolocation을 지원안하는 경우에 대한 에러 처리
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.'); // boolean_condition ? statement1 : statement2 -> boolean 조건이 1이면 statement1 택하고 0이면 statement2를 택하겠다.
+      }
+
+
+      } //end of initmap()
+      console.log(map);
+      function callback(results, status) { // nearbySearch에서 호출한 callback함수
+        if (status === google.maps.places.PlacesServiceStatus.OK) { // === 연산자는 값과 자료형 둘다 같아야 return 1.
+          for (var i = 0; i < results.length; i++) {
+            createMarker(results[i]); //callback함수에서 또 다른 함수 createMarker를 호출 하고 있다.
+          }
+        }
+      }
+
+      function createMarker(place) {
+        //var placeLoc = place.geometry.location;
+        var marker = new google.maps.Marker({ //마커 객체 생성
+          map: map,
+          position: place.geometry.location
+        });
+
+        google.maps.event.addListener(marker, 'click', function() { // 위에서 생성된 마커에 대해서 ,onClicklistener을 붙여준다. 즉, 이 마커가 눌렸을때에 대한 처리에 대한 내용임.
+          infowindow.setContent(place.name);
+          infowindow.open(map, this);
+        });
+      }
+      function A(){console.log(map);};
+      A();
+      //console.log(map);
+    delete map;
+    delete pos;
+    delete infoWindow;
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBkoEusz-eNlieK4z61Z77jELoz0powUo&libraries=places&callback=initMap" async defer></script>
+  </body>
+</html>

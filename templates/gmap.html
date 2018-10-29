@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var map;
+
+function initMap() {
+  var myLatlng = {lat: -25.363, lng: 131.044};
+
+  var map = new google.maps.Map(document.getElementById('map'), { //document.getElementByID('map')은 html에서 id가 map인 것을 찾아서 return.
+    zoom: 4,
+    center: myLatlng
+  });
+
+  var marker = new google.maps.Marker({ // 마커 객체를 만드는데 생성자 parameter로 아래의 것들을 넘김.
+    position: myLatlng,
+    map: map,
+    title: 'Click to zoom',
+      icon: 'http://www.bantmoa.com/files/posA/1_%EC%A2%8B%EC%95%84%EC%9A%94.png',
+    info: "좋아요",
+    likes: 0 // 좋아요 개수를 표시하기 위해서 만든 변수
+
+  });
+  map.addListener('center_changed', function() {
+    // 3 seconds after the center of the map has changed, pan back to the
+    // marker.
+    window.setTimeout(function() {
+      map.panTo(marker.getPosition());
+    }, 3000);
+  });
+
+  marker.addListener('click', function() { // 마커가 클릭 되었을 때 익명함수를 실행하겠다.
+    map.setZoom(8);
+    map.setCenter(marker.getPosition());
+    marker.likes++; // 그냥 likes++; 해버리면 안됨. 꼭 marker객체의 likes라는 변수를 이용하겠다는 것을 명시해야함.
+      var content = "이곳은"+marker.likes+"명이 추천했습니다.";		 // 말풍선 안에 들어갈 내용
+        var infowindow = new google.maps.InfoWindow({ content: content}); // 말풍선 객체를 만드는데 ,생성자 parameter로 content를 넘김
+
+    infowindow.open(map,marker);
+  });
+
+}
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDkrXNhDDmcHDKpxrzT2urUDLOnOcXKgJI&callback=initMap"
+    async defer></script>
+  </body>
+</html>
